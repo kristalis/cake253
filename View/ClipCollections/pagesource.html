@@ -1,0 +1,1354 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<!--
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+-->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>CMS: ClipCollections</title>
+
+<link href="/favicon.ico" type="image/x-icon" rel="icon" /><link href="/favicon.ico" type="image/x-icon" rel="shortcut icon" /><script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script><script type="text/javascript" src="/js/jquery.tools.min.js"></script><script>
+    $(document).bind("dragstart", function(e) {
+        if (e.target.nodeName.toUpperCase() == "IMG" || e.target.nodeName.toUpperCase() == "A") {
+            return false;
+        }
+    });
+
+    $.tools.tabs.addEffect("ajaxWhenNeeded", function (i, done) {
+        this.getPanes().hide().eq(i).show();
+
+        if (this.getTabs().eq(i).data("loadedOnce") != 1) {
+            this.getPanes().eq(i).load(this.getTabs().eq(i).attr("href"));
+            this.getTabs().eq(i).data("loadedOnce", 1);
+        }
+
+        done.call();
+
+        return false;
+    });
+
+    $.tools.tabs.addEffect("ajaxWhenSetAndNeeded", function (i, done) {
+        var self = this;
+
+        this.getPanes().hide().eq(i).show();
+
+        if (this.getTabs().eq(i).data("loadedOnce") != 1) {
+            this.getTabs().eq(i).addClass("loading");
+            this.getPanes().eq(i)
+                    .addClass("loading")
+                    .load(this.getTabs().eq(i).attr("href"), function () {
+                        self.getPanes().eq(i).removeClass("loading");
+                        self.getTabs().eq(i).removeClass("loading");
+                    });
+            this.getTabs().eq(i).data("loadedOnce", 1);
+        }
+
+        done.call();
+
+        return false;
+    });
+
+
+
+    $.tools.tabs.addEffect("ajaxWithLoader", function (i, done) {
+        //console.log(this);
+        /*console.log(i);
+        console.log(done);
+
+        console.log(this);*/
+
+        /*$pane = this.getPanes().eq(i);*/
+
+        $pane = this.getCurrentPane();
+
+        $pane.show();
+        $pane.html("Loading...");
+        $pane.load(this.getTabs().eq(i).attr("href"));
+
+        done.call();
+    });
+
+    $.fn.jqttabs = $.fn.tabs;
+    delete $.fn.tabs;
+</script>
+<script type="text/javascript" src="/js/jquery-ui-1.8.20.custom.min.js"></script><script type="text/javascript" src="/js/jquery-custom-file-input.js"></script><script type="text/javascript" src="/js/persist-min.js"></script><script type="text/javascript" src="/js/jquery.treeTable.js"></script><script type="text/javascript" src="/js/jquery.waitforimages.js"></script><script type="text/javascript" src="/js/jquery.form.latest.js"></script><script type="text/javascript" src="/js/jquery.color.js"></script><script type="text/javascript" src="/js/jquery.Jcrop.min.js"></script><script type="text/javascript" src="/js/jquery.cookie.js"></script><script type="text/javascript" src="/js/underscore.min.js"></script><script type="text/javascript" src="/js/jquery.confirm.js"></script><script type="text/javascript" src="/js/jquery.autosize.min.js"></script><script type="text/javascript" src="/js/backbone.dev.js"></script><script type="text/javascript" src="/js/backbone/main.js"></script><script type="text/javascript" src="/js/backbone/app-router.js"></script><script type="text/javascript" src="/js/backbone/collections/app-collection.js"></script><script type="text/javascript" src="/js/backbone/models/app-model.js"></script><script type="text/javascript" src="/js/backbone/views/app.js"></script><script type="text/javascript" src="/js/backbone/views/default.js"></script><script>
+    App.Config.baseUrl = "/";
+    App.Config.fullBaseUrl = "http://localhost:8002/";
+
+   
+
+    var $j = jQuery.noConflict(true);
+</script>
+
+<script src="/js/jquery.js" type="text/javascript"></script>
+<script src="/js/jquery.form.js" type="text/javascript"></script>
+<script src="/js/my.js" type="text/javascript"></script>
+<script src="/js/fckeditor.js" type="text/javascript"></script>
+<script src="/js/ajaxupload.js" type="text/javascript"></script>
+<script type="text/javascript">
+    myBaseUrl = App.Config.baseUrl;
+    cmsUrl = App.Config.fullBaseUrl;
+</script>
+
+<!-- jQuery UI -->
+<script src="/js/jquery.ui/ui.core.js"
+        type="text/javascript"></script>
+<script src="/js/jquery.ui/ui.dialog.js" type="text/javascript"></script>
+<script src="/js/jquery.ui/ui.draggable.js" type="text/javascript"></script>
+<script src="/js/jquery.ui/ui.droppable.js" type="text/javascript"></script>
+<script src="/js/jquery.ui/ui.resizable.js" type="text/javascript"></script>
+<script src="/js/jquery.ui/ui.sortable.js" type="text/javascript"></script>
+
+<script src="/js/libs/Base.js" type="text/javascript"></script>
+
+
+
+<script type="text/javascript" src="/js/video-js/video.js"></script><script>
+    videojs.options.flash.swf = "/js/video-js/video-js.swf";
+</script>
+
+
+<link rel="stylesheet" type="text/css" href="/css/datePicker.css" /><link rel="stylesheet" type="text/css" href="/css/colorPicker.css" /><link rel="stylesheet" type="text/css" href="/css/jquery.farbtastic.css" /><link rel="stylesheet" type="text/css" href="/css/ui.all.css" /><link rel="stylesheet" type="text/css" href="/css/base.css" /><link rel="stylesheet" type="text/css" href="/css/chris.css" /><link rel="stylesheet" type="text/css" href="/css/awesome-buttons.css" media="all" /><link rel="stylesheet" type="text/css" href="/css/jquery.Jcrop.min.css" media="all" /><link href="/js/video-js/video-js-css" rel="stylesheet">
+
+<script language="Javascript">
+(function($) {
+    $.fn.extend( {
+        limiter: function(limit, elem) {
+            $(this).on("keyup focus", function() {
+                setCount(this, elem);
+            });
+            function setCount(src, elem) {
+                var chars = src.value.length;
+                if (chars > limit) {
+                    src.value = src.value.substr(0, limit);
+                    chars = limit;
+                }
+                if((limit - chars) < 1) {
+                    elem.html("0");
+                } else {
+                    elem.html( limit - chars );
+                }
+            }
+            setCount($(this)[0], elem);
+        }
+    });
+})($j);
+
+var userId = 90000028;
+
+// Redirect to login page on a failed AJAX request due to authentication
+$("html").ajaxComplete(function (event, request, settings) {
+    var requiresAuth;
+    try {
+        requiresAuth = request.getResponseHeader('Requires-Auth')
+    }
+    catch (e) {
+    }
+
+    if (requiresAuth == 1) {
+        alert("Your user session has expired. You will now be re-directed to the login page.");
+        window.location = "/users/login";
+        return false;
+    }
+});
+
+function ImgHover(Img, Cursor, Image, BGColour) {
+    Img.style.cursor = Cursor;  // set the cursor
+    if (BGColour != null)
+        Img.parentNode.style.backgroundColor = BGColour;
+    if (Cursor == 'pointer') {
+        Img.src = myBaseUrl + 'img/' + Image + '_on.png';
+    } else {
+        Img.src = myBaseUrl + 'img/' + Image + '_off.png';
+    }
+}
+
+var warningTimer, expireTimer;
+
+// id of the popup
+var content_id = '#simple_popup_div';
+var preview_content_id = '#simple_preview_popup_div';
+var alert_content_id = '#simple_alert_popup_div';
+var intro_content_id = '#simple_intro_popup_div';
+
+$(document).ready(function () {
+    // Fade out flash message after 10 secs
+
+
+    $('#divToHome').unbind('click').click(function() {
+        window.location = "/home/index";
+    })
+
+    clipStagesClickable(0, 0);
+
+    // using jquery.ui.dialog
+    $.ui.dialog.defaults.bgiframe = true;
+    $.ui.dialog.defaults.modal = false;
+    $.ui.dialog.defaults.autoOpen = false;
+
+    $(preview_content_id).bind('dialogclose', function (event, ui) {
+        $(preview_content_id).html('');
+    });
+
+    $(preview_content_id).dialog({
+        bgiframe:true,
+        draggable:true,
+        resizable:true,
+        position:'center',
+        show:'slide',
+        hide:'slide'
+    });
+
+    // using jquery.ui.dialog
+    $.ui.dialog.defaults.bgiframe = true;
+    $.ui.dialog.defaults.modal = true;
+    $.ui.dialog.defaults.autoOpen = false;
+
+    $(content_id).bind('dialogclose', function (event, ui) {
+        $(content_id).html('');
+    });
+
+    $(content_id).dialog({
+        bgiframe:true,
+        maxHeight:750,
+        minWidth:450,
+        maxWidth:1024, //750
+        draggable:true,
+        resizable:true,
+        width:'auto', //750, //780, 'auto',
+        height:'auto',
+        position:"center" //position:[300,200], //position:['left','top'],
+    });
+
+    $(alert_content_id).bind('dialogclose', function (event, ui) {
+        $(alert_content_id).html('');
+    });
+
+    $(alert_content_id).dialog({
+        bgiframe:true,
+        maxHeight:250,
+        minWidth:450,
+        maxWidth:450,
+        draggable:true,
+        resizable:true,
+        position:"center",
+        width:450,
+        height:'auto'
+    });
+
+    $(intro_content_id).bind('dialogclose', function (event, ui) {
+        $(intro_content_id).html('');
+    });
+
+    $(intro_content_id).dialog({
+        bgiframe:true,
+        maxHeight:800,
+        minWidth:900,
+        maxWidth:900,
+        draggable:true,
+        resizable:true,
+        position:[220, 20],
+        width:900,
+        height:'auto',
+        hide:'slide'
+    });
+
+    $("div.jsTab a").each(function(idx, elem) {
+        if(window.location.href.indexOf($(elem).attr("href")) > -1) {
+            $(elem).addClass("active");
+        }
+    });
+
+});
+
+function hidePopup() {
+    // additional actions will be added before dialog close
+    $(content_id).dialog('close');
+}
+
+function hidePreviewPopup() {
+    // additional actions will be added before dialog close
+    $(preview_content_id).dialog('close');
+}
+
+function hideAlertPopup() {
+    // additional actions will be added before dialog close
+    $(alert_content_id).dialog('close');
+}
+
+function hideIntroPopup() {
+    // additional actions will be added before dialog close
+    $(intro_content_id).dialog('close');
+}
+
+
+function triggerModal(obj, linkpass, windowtitle, width, height, otherOptions) {
+    otherOptions = $.extend({
+        beforeClose:function () {
+        },
+        position: {
+            my: "center",
+            at: "center",
+            of: window
+        }
+    }, otherOptions);
+
+    //Get the destination
+    var clickedHref = '';
+    if (obj != null) {
+        clickedHref = $(obj).attr('href');
+    }
+    if (linkpass != null) {
+        clickedHref = linkpass;
+    }
+
+    $('#please_wait').show();
+
+    $(content_id).bind('dialogbeforeclose', function () {
+        otherOptions.beforeClose();
+        $(content_id).unbind('dialogbeforeclose');
+    });
+
+    if (windowtitle)
+        $(content_id).dialog('option', 'title', windowtitle);
+
+    if (typeof width == 'undefined') {
+        $(content_id).css('min-width', '530px');
+    } else {
+        $(content_id).css('min-width', width);
+    }
+
+    if (typeof height == 'undefined') {
+        $(content_id).css('min-height', '300px');
+    } else {
+        $(content_id).css('min-height', height);
+    }
+
+    $(content_id).dialog('option', 'position', 'center');
+
+    $(content_id).dialog('open');
+
+
+    $(content_id).load(clickedHref, function (response, status, xhr) {
+        if (status == "error") {
+            $(content_id).dialog('close');
+            alert("Could not load " + clickedHref + " - " + xhr.status + " " + xhr.statusText);
+        }
+
+        $('#please_wait').hide();
+    });
+    return false;
+}
+
+function triggerModalDirect(obj, linkpass, windowtitle) {
+    //Get the destination
+    var clickedHref = '';
+    if (obj != null) {
+        clickedHref = $(obj).attr('href');
+    }
+    if (linkpass != null) {
+        clickedHref = linkpass;
+    }
+
+    if (windowtitle) {
+        $(content_id).dialog('option', 'title', windowtitle);
+    }
+
+    $(content_id).dialog('option', 'show', 'slide');
+    $(content_id).dialog('option', 'hide', 'slide');
+
+    $(content_id).css('width', 'auto');
+    $(content_id).css('height', 'auto');
+
+    $(content_id).load(clickedHref);
+
+    $(content_id).dialog('option', 'width', 'auto');
+    $(content_id).dialog('option', 'height', 'auto');
+    $(content_id).dialog('option', 'position', 'centre');
+    $(content_id).dialog('option', 'overflow', 'auto');
+
+    $(content_id).dialog('open');
+
+    // hide/show the title bar if no windowtitle
+    if (!windowtitle) {
+        $(".ui-dialog-titlebar").hide();
+    }
+    else {
+        $(".ui-dialog-titlebar").show();
+    }
+
+    $(content_id).css('width', 'auto');
+    $(content_id).css('height', 'auto');
+
+    return false;
+}
+
+function triggerModalCustom(obj, linkpass, windowtitle, windowPos, windowWidth, windowHeight, buttons) {
+    //Get the destination
+    var clickedHref = '';
+    if (obj != null) {
+        clickedHref = $(obj).attr('href');
+    }
+    if (linkpass != null) {
+        clickedHref = linkpass;
+    }
+
+    if (windowtitle)
+        $(content_id).dialog('option', 'title', windowtitle);
+
+    $(content_id).dialog('option', 'show', 'slide');
+    $(content_id).dialog('option', 'hide', 'slide');
+
+    $(content_id).css('width', windowWidth + 'px');
+    $(content_id).css('height', windowHeight + 'px');
+
+    $(content_id).load(clickedHref);
+
+    $(content_id).dialog('option', 'width', 'auto');
+    $(content_id).dialog('option', 'height', 'auto');
+    $(content_id).dialog('option', 'position', windowPos);
+    $(content_id).dialog('option', 'maxWidth', windowWidth);
+    $(content_id).dialog('option', 'minWidth', windowWidth);
+
+
+    if (buttons) {
+        $(content_id).dialog("option", "buttons", {
+            "OK": function() {
+                $(content_id).dialog("close");
+            },
+            "CANCEL": function() {
+                $(content_id).dialog("close");
+            }
+        });
+    }
+
+    $(content_id).dialog('open');
+
+    // hide/show the title bar if no windowtitle
+    if (!windowtitle) {
+        $(".ui-dialog-titlebar").hide();
+    }
+    else {
+        $(".ui-dialog-titlebar").show();
+    }
+
+    $(content_id).css('width', windowWidth + 'px');
+    $(content_id).css('height', windowHeight + 'px');
+
+    return false;
+}
+
+
+function triggerAlert(obj, linkpass, windowtitle, alerttext) {
+    //Get the destination
+    var clickedHref = '';
+    if (obj != null) {
+        clickedHref = $(obj).attr('href');
+    }
+    if (linkpass != null) {
+        clickedHref = linkpass
+    }
+    if (windowtitle)
+        $(alert_content_id).dialog('option', 'title', windowtitle);
+
+    $(alert_content_id).dialog('open');
+
+    $(alert_content_id).css('width', 'auto');
+    $(alert_content_id).css('height', 'auto');
+
+    $(alert_content_id).dialog("option", "buttons", {
+        "CANCEL": function() {
+            $(this).dialog("close");
+        },
+        "OK": function() {
+            window.location = clickedHref;
+            //$(this).dialog("close");
+        }
+    });
+
+
+    $(alert_content_id).html('<div style="color:#ffffff;">' + alerttext + '</div>');
+
+    return false;
+}
+
+
+function triggerJSAlert(obj, linkpass, windowtitle, alerttext) {
+    //Get the destination
+    var clickedHref = '';
+    if (obj != null) {
+        clickedHref = $(obj).attr('href');
+    }
+    if (linkpass != null) {
+        clickedHref = linkpass
+    }
+    if (windowtitle)
+        $(alert_content_id).dialog('option', 'title', windowtitle);
+
+    $(alert_content_id).dialog('open');
+
+    $(alert_content_id).css('width', 'auto');
+    $(alert_content_id).css('height', 'auto');
+
+    $(alert_content_id).dialog("option", "buttons", {
+        "CANCEL": function() {
+            $(this).dialog("close");
+        },
+        "OK": function() {
+            window.location = clickedHref;
+            $(this).dialog("close");
+        }
+    });
+
+
+
+    $(alert_content_id).html('<div>' + alerttext + '</div>');
+
+    return false;
+}
+
+function triggerAlertOKOnly(obj, linkpass, windowtitle, alerttext) {
+    //Get the destination
+    var clickedHref = '';
+    if (obj != null) {
+        clickedHref = $(obj).attr('href');
+    }
+    if (linkpass != null) {
+        clickedHref = linkpass
+    }
+    if (windowtitle)
+        $(alert_content_id).dialog('option', 'title', windowtitle);
+
+    $(alert_content_id).dialog('open');
+
+    $(alert_content_id).css('width', 'auto');
+    $(alert_content_id).css('height', 'auto');
+
+    if (clickedHref == '') {
+        $(alert_content_id).dialog("option", "buttons", {
+            "OK": function() {
+                $(this).dialog("close");
+            }
+        });
+    } else {
+        $(alert_content_id).dialog("option", "buttons", {
+            "OK": function() {
+                window.location = clickedHref;
+                //$(this).dialog("close");
+            }
+        });
+    }
+
+
+    $(alert_content_id).html('<div>' + alerttext + '</div>');
+
+    return false;
+}
+
+function triggerModalNoWait(obj, linkpass, windowtitle, portrait, width, height) {
+    if (portrait == 1) {
+        width = typeof width !== 'undefined' ? width : '316px';
+        height = typeof height !== 'undefined' ? height : '722px';
+    } else {
+        width = typeof width !== 'undefined' ? width : '820px';
+        height = typeof height !== 'undefined' ? height : '600px';
+    }
+    //Get the destination
+    var clickedHref = '';
+    if (obj != null) {
+        clickedHref = $(obj).attr('href');
+    }
+    if (linkpass != null) {
+        clickedHref = linkpass;
+    }
+
+    if (windowtitle)
+        $(preview_content_id).dialog('option', 'title', windowtitle);
+
+    $(preview_content_id).load(clickedHref);
+    if (portrait == null) {
+        portrait = 0;
+    }
+    if (portrait == 1) {
+        $(preview_content_id).dialog('option', 'width', width);
+        $(preview_content_id).dialog('option', 'height', height);
+    } else {
+        $(preview_content_id).dialog('option', 'width', width);
+        $(preview_content_id).dialog('option', 'height', height);
+    }
+    //$(preview_content_id).dialog('option', 'position', 'center');
+    $(preview_content_id).dialog('open');
+
+    return false;
+}
+
+function triggerModalIntro(obj, linkpass, windowtitle) {
+    //Get the destination
+    var clickedHref = '';
+    if (obj != null) {
+        clickedHref = $(obj).attr('href');
+    }
+    if (linkpass != null) {
+        clickedHref = linkpass
+    }
+    if (windowtitle)
+        $(intro_content_id).dialog('option', 'title', windowtitle);
+
+    $(intro_content_id).dialog('open');
+    $(intro_content_id).css('width', 'auto');
+    $(intro_content_id).css('height', 'auto');
+    $(intro_content_id).load(clickedHref);
+
+    return false;
+}
+
+function DivHover(Div, Cursor, Image) {
+    Div.style.cursor = Cursor;  // set the cursor
+    if (Cursor == 'pointer') {
+        Div.style.backgroundImage = "url('/img/'+Image+'_on.png')";
+    } else {
+        Img.src = myBaseUrl + 'img/' + Image + '_off.png';
+    }
+}
+
+function TextHover(Div, Colour) {
+    Div.style.color = Colour;
+}
+
+function MenuHover(Div, Cursor, Image) {
+    Div.style.cursor = Cursor;  // set the cursor
+    if (Cursor == 'pointer') {
+        if (Div.className == '') {
+            Div.style.backgroundImage = "url(" + Image + "_over.png)";
+        }
+    } else {
+        if (Div.className == 'current') {
+            Div.style.backgroundImage = "url(" + Image + "_on.png)";
+        } else {
+            Div.style.backgroundImage = "url(" + Image + "_off.png)";
+        }
+    }
+}
+
+function isNumber(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function clipDurationControl(event, elementClass, defaultVal) {
+    defaultVal = typeof defaultVal !== 'undefined' ? defaultVal : '00';
+    if(event == 'click') {
+        $('.'+elementClass).val('');
+    } else if(event == 'blur') {
+        if($('.'+elementClass).val() == '') {
+            $('.'+elementClass).val(defaultVal);
+        }
+    } else if(event == 'keypress'){
+        var max_chars = 2;
+        if($('.'+elementClass).val().length > max_chars) {
+            $('.'+elementClass).val($('.'+elementClass).val().substr(0, max_chars));
+        }
+
+        // Prevent non-numeric characters
+        var val = $('.'+elementClass).val(), len = val.length, newVal = '';
+        for (var i = 0; i < len; i++) {
+            if(isNumber(val[i])) newVal += val[i];
+        }
+        if(newVal != val) $('.'+elementClass).val(newVal);
+    }
+}
+
+function formatImageDuration(type, time, minutes, seconds) {
+    minutes = typeof minutes !== 'undefined' ? minutes : '0';
+    seconds = typeof seconds !== 'undefined' ? seconds : '0';
+    if(type == 'edit') {
+        return secondsToHms(time);
+    } else if(type == 'save') {
+        return hmsToSeconds(time, minutes, seconds);
+    }
+}
+
+function hmsToSeconds(h, m, s) {
+    if(isNaN(h)) h = 0;
+    if(isNaN(m)) m = 0;
+    if(isNaN(s)) s = 0;
+    var tot = parseInt((parseInt(h)*3600) + (parseInt(m)*60) + parseInt(s));
+    return tot;
+}
+
+function secondsToHms(d) {
+    d = Number(d);
+    var h = Math.floor(d / 3600);
+    var m = Math.floor(d % 3600 / 60);
+    var s = Math.floor(d % 3600 % 60);
+    return [(h > 0 ? (h < 10 ? "0" + h : h) : "00"), (m > 0 ? (m < 10 ? "0" : "") + m : "00"), (s < 10 ? "0" : "") + s];
+}
+
+// change clip status
+function reviewClipTo(status) {
+}
+
+function clipStagesClickable(currentStage, live) {
+    $('div.xlocation_box').unbind('click').click(function() {
+        //console.log($(this));
+    })
+}
+
+function unpublishedPlaylists() {
+    $.ajax({
+        url: "/playlists/checkUnpublished",
+        type: "get",
+        success: function(response) {
+            if(response == "true") {
+                var $alertDiv = $("<div />").addClass("unpublishedAlert").html("<img style='position: relative; top: 3px;' src='/img/scheduleAlert.png' /> There are currently updates waiting to be published");
+                $("div#menuArea").append($alertDiv);
+            }
+        }
+    });
+}
+
+function addPlaylist() {
+    var $addPlaylistDiv = $("div#add-playlists");
+    if($addPlaylistDiv.length) {
+        $addPlaylistDiv.dialog({
+            width: 500,
+            height: 500,
+            title: "ADD PLAYLIST",
+            autoOpen: true,
+            buttons: {
+                "SAVE": function() {
+                    /*$.ajax({
+                        url:
+                    });*/
+                    $addPlaylistDiv.dialog("close");
+                },
+                "CANCEL": function() {
+                    $addPlaylistDiv.dialog("close");
+                }
+            }
+        });
+    }
+}
+
+// AH - replace alert function
+
+var alert = function(message, title) {
+    title = (typeof title == "undefined") ? "Message" : title;
+
+    $("<div />")
+        .html(message)
+        .dialog({
+            width: 300,
+            height: "auto",
+            title: title,
+            autoOpen: true,
+            buttons: {
+                "OK": function() {
+                    $(this).dialog("close");
+                }
+            }
+        });
+}
+
+
+</script>
+
+<style>
+    #topArea {
+    background-image:url('/img/base_banner_logo.png');background-color:#626262;        background-repeat: no-repeat;
+        height: 132px;
+    }
+
+</style>
+
+
+	<link rel="stylesheet" type="text/css" href="/debug_kit/css/debug_toolbar.css" />
+<script type="text/javascript">
+//<![CDATA[
+window.DEBUGKIT_JQUERY_URL = "/debug_kit/js/jquery.js";
+//]]>
+</script><script type="text/javascript" src="/debug_kit/js/js_debug_toolbar.js"></script>
+</head>
+
+<body xoncontextmenu="return false;">
+<div id="alert"
+     style="display:none;background-color:red;color:white;padding:5px;font-size:14px;text-align:center;font-weight:bold;">
+    Long period of inactivity. The page will automatically refresh in 10 minutes to keep your session open. <a
+        href="javascript:void(0);" onclick="restart_session_check('restart');" style="color:white;">CONFIRM PRESENCE</a>
+</div>
+
+<div id="topArea">
+    <div id="menuArea">
+        <div id="divToHome" style="left:0px; top:19px; width:274px; height:71px; position:relative; float:left;"></div>
+        <ul>
+            <div style="width:100%; height:105px; position:relative; float:left;"></div><div style="background-image:url('/img/base_btn_createclip_off.png'); background-repeat:no-repeat; position:relative; float:left; height:28px;width:118px; height:28px; position:relative; float:left;" onclick="if(typeof parent.iframeTriggerCreateClip === 'function') { parent.iframeTriggerCreateClip(); } else { window.location='/clips/add' }" onmouseover="MenuHover(this, 'pointer', '/img/base_btn_createclip')" onmouseout="MenuHover(this, 'default', '/img/base_btn_createclip')"></div><li class="jsTab"><div class="jsTab" value="1"><a href="/clips/index">Clips</a></div></li><li class="jsTab"><div class="jsTab" value="2"><a href="/support">Support</a></div></li><li class="jsTab"><div class="jsTab" value="3"><a href="/clipcollections/add">MultiScreena</a></div></li><li class="jsTab"><div class="jsTab" value="4"><a style="height: 10px !important; margin-right: 6px !important; float:right;" onclick="triggerAlert(null,'/users/login','Confirm Logout','Are you sure you want to logout?')" class="awesome medium button">Logout</a></div></li>
+        </ul>
+    </div>
+</div>
+
+<div id="alertUser"
+     style="display:none;background-color:red;color:white;padding:5px;font-size:14px;text-align:center;font-weight:bold;"></div>
+<div id="container" style="position: relative; z-index: 1; min-height:300px;">
+    <div id="main">
+                	<style>
+         select {
+            width: 250px;
+            /* Set overflow-y to hidden by default */
+            overflow-y: hidden;
+            padding-top: 10px;
+        }
+		/* Style the tab buttons */
+		.tab {
+		  background-color: #f1f1f1;
+		  float: left;
+		  border: none;
+		  outline: none;
+		  cursor: pointer;
+		  padding: 14px 16px;
+		  font-size: 17px;
+		  width: 25%;
+          display: inline-block;
+		}
+
+		/* Style the active tab button */
+		.tab.active {
+		  background-color: #ccc;
+		}
+
+		/* Style the tab content */
+		.tabcontent {
+		  display: none;
+		  padding: 6px 12px;
+		  border: 1px solid #ccc;
+		  border-top: none;
+		}
+	</style>
+
+<style type="text/css">
+    #processes .not-video-taks {
+        display: none;
+    }
+    iframe {
+        background-color: #333;
+    }
+    .UserOrientation label {
+    width: 200px;
+    height: 150px;
+    font-size: 12px;
+    color: white;
+    }
+
+    .sprite.sprite-clipedit_btn_duration_off {
+        background-position: -861px -148px;
+    }
+    div#pagebuttons {
+        padding-left: 20px;
+    }
+
+
+    input#ClipStartHour, input#ClipEndHour{
+        text-align: center;
+    }
+    input#ClipStartMinute, input#ClipEndMinute{
+        text-align: center;
+    }
+    input#ClipStartHhMm, input#ClipEndHhMm{
+        text-align: center;
+    }
+
+
+    #ClipImageDurationH, #ClipImageDurationM, #ClipImageDurationS{
+        width: 25px;
+        text-align: center;
+    }
+
+    .clipadd_cliporientation_input{
+        float:left;
+    }
+    .sprite{
+        
+        width: 97px;
+        height: 21px;
+        background: url(../../img/sprite_clipedit.png) no-repeat top left;
+    }
+</style>
+<style>
+    .each_video_upload_container .video_player_container video,
+    .each_video_upload_container .image_container canvas{
+        max-width: 100%;
+    }
+    .ui-accordion-link{
+        display: none !important;
+    }
+    .ui-accordion-content.ui-widget-content{
+        border: 0 none;
+    }
+    .validation_error{
+        color: #c60;
+        font-size: .8em;
+        font-style: italic;
+    }
+    #image_container,
+    #video_container,
+    #final_image_space{
+        margin-bottom: 10px;
+    }
+    #image_container .row,
+    #final_image_space .row{
+        display: flex;
+        justify-content: center;
+    }
+    .each_video{
+        border: 1px solid #777777;
+        display: flex;
+        align-items: center;
+    }
+    .each_video video {
+        width: 100%;
+        max-width: 100%;
+        max-height: 350px;
+    }
+    .each_image{
+        text-align: center;
+        border: 1px solid #777777;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        width: 150px;
+        height: 150px;
+    }
+    .each_image img{
+        max-width: 100%;
+        max-height:100%;
+    }
+    .each_image.active,
+    .each_image:hover{
+        border-width: 2px;
+        border-color: #003eff;
+    }
+    #final_image_space .each_image.active,
+    #final_image_space .each_image:hover
+    {
+        border-width: 1px;
+        border-color: #777777;
+    }
+    .each_file:not(.active),
+    .each_video:not(.active)
+    {
+        display: none;
+    }
+    .custom_error{
+        display: none;
+        color: #c00;
+        font-style: italic;
+        text-align: center;
+    }
+    .listbox {
+        height: 500px; /* adjust this value as needed */
+        font-size: 16px; /* adjust this value as needed */
+    }
+</style>
+<script type="text/javascript">
+    var userVideoOrientation = 1;
+    var userVideoRotation = 0;
+    var previewWidth = 300;
+    var previewHeight = 170;
+        // Get the element with id="defaultOpen" and click on it
+        document.getElementById("defaultOpen").click();
+</script>
+
+
+
+
+<link rel="stylesheet" type="text/css" href="/css/clips/ajaxadd.css?v2" /><!-- load jQuery 3.2.1 -->
+<script type="text/javascript" src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+<script type="text/javascript">
+var jQuery_3 = $.noConflict(true);
+</script>
+
+<link rel="stylesheet" type="text/css" href="/css/clips/edit.css" media="all" />
+<script type="text/javascript" src="/js/jquery.datePicker.js"></script>
+<script type="text/javascript" src="/js/date.js"></script>
+<script type="text/javascript" src="/js/jquery.ui/ui.all.js"></script>
+<script type="text/javascript" src="/js/clip_collections/ajaxadd.js"></script>
+<script type="text/javascript" src="/js/clip_collections/add_clip_collections.js"></script>
+<script type="text/javascript" src="/js/clip_collections/custom.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/css/elements/duration.css" /><div id="containerMain">
+<div id="steps">
+
+<div class="step-1">
+
+    <div class="baseHeader">
+        <div style="width:100%; height:65px; position:relative; float:left">
+            <div style="width:100%; height:23px; position:relative; float:left"></div>
+            <div style="width:100%; height:28px; position:relative; float:left">
+                            </div>
+        </div>
+        <div style="width:100%; height:104px; position:relative; float:left">
+            <div style="width:40px; height:109px; position:relative; float:left"></div>
+            <div class="clipadd_title">
+                <div class="heading" style="width:100%; height:30px; position:relative; float:left">CLIP EDITOR</div>
+             
+            </div>
+        
+            <div class="clipadd_trail">
+                <div id="xlocation_trail" style="width:440px; background-image:url(/img/base_progress_4.png);"><div class="xstep_separator setup">&nbsp</div><div class="xlocation_box setup" style="width:89px;"></div><div class="xstep_separator input-box">&nbsp</div><div class="xlocation_box input-box" style="width:79px;"></div><div class="xstep_separator scheduling">&nbsp</div><div class="xlocation_box scheduling" style="width:130px;"></div><div class="xstep_separator distribution">&nbsp</div><div class="xlocation_box distribution" style="width:75px;"></div><div style="clear:both;"></div></div>            </div>
+        </div>
+    </div>
+
+    <div class="baseBody">
+    <div class="baseLeftOffset"></div>
+    <div class="baseContainer">
+    <div class="linebreakBlock" style="height:10px;">
+        <div class="linebreak"></div>
+    </div>
+
+    <form action="/clipcollections/add" id="ClipAddForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
+    <input type="hidden" name="data[output]" value="json">
+    <div class="clipadd_clipname">
+        <div class="clipadd_clipname_label">
+            <div class="clipadd_labeltext" style="width:180px;">BOOK COLLECTION NAME  </div>
+        
+        </div>
+        <div class="clipadd_clipname_input">
+            <div class="input text"><input name="data[Clip][name]" maxlength="50" type="text" id="ClipName"/><div id="clipNameError"></div></div>        </div>
+    </div>
+
+    
+        <!-- kamod -->
+
+
+    <div class="clipadd_padding_y" style="height:7px;"></div>
+    <div class="linebreakBlock how-to-create" style="height:10px;">
+        <div class="linebreak"></div>
+    </div>
+
+
+    <div class="clip-type-tabs">
+
+
+
+        <div class="clipadd_padding_y" style="height:17px;"></div>
+
+
+
+        <div class="clipadd_category_label how-to-create">
+            <div class="clipadd_labeltext" style="width:695px;">SELECT SCREEN</div>
+            
+            <!-- clipadd_labelhelp -->
+        </div>
+        
+
+      
+        <div class="clipadd_padding_y how-to-create" style="height:15px;"></div>
+       
+        <div class="panes">
+        
+            <div id="clip-type-tabs-1">
+                <div class="clipadd_backgrounds">
+                    <!-- select category -->
+                    <div class="clipadd_category_input">
+                        <div class="clipadd_category">
+                         
+                            <!-- clipadd_category_label -->
+                            <div class="input select"><select name="data[Clip][screen_collection_id]" style="height:180px" class="pageRequired" size="10" id="ClipScreenCollectionId">
+<option value="">(Select a screen)</option>
+<option value="1">Single Screen 1</option>
+<option value="2">Landscape - 2 Screens 2</option>
+<option value="3">Landscape - 3 Screens 3</option>
+<option value="4">Landscape - 4 Screens 4</option>
+<option value="5">Portrait - 2 Screens 2</option>
+<option value="6">Portrait - 3 Screens 3</option>
+<option value="7">Portrait - 4 Screens 4</option>
+</select></div>
+                     
+                            <!-- clipadd_categoryselection -->
+                        </div>
+                        <!-- clipadd_category -->
+
+                        <!-- select background -->
+                        <div class="clipadd_background">
+                            <input type="hidden" name="data[Clip][background_id]" id="ClipBackgroundId"/>                            <div id="backgroundSelection" class="clipadd_backgroundselection">
+                            </div>
+                            <!-- clipadd_backgroundselection -->
+                        </div>
+                        <!-- clipadd_background -->
+
+                    </div>
+                    <!-- clipadd_category_input -->
+
+                </div>
+
+             
+                <!-- clipadd_templates -->
+            </div>
+         
+           
+          
+           
+        
+            
+         
+        </div>
+        
+    </div>
+    
+
+    <!-- linebreak -->
+    <div class="linebreakBlock" style="height:20px;">
+    <!-- baseBody -->
+    </div>
+
+    <div class="clipadd_navbuttonbar">
+        <!-- navigation buttons -->
+        <div class="clipadd_navbuttonbarbody">
+            <div class="clipadd_navbuttonbar">
+                <div class="baseButtonNav2">
+                    <div class="basePaddingNav_x"></div>
+                    <div class="basePaddingNav_y"></div>
+                    <div class="basePaddingNav_img">
+                        <!-- back button -->
+                    
+                        <!-- baseImgNavBack -->
+                        <!-- spacer -->
+                        <div class="basePaddingNav_3"></div>
+                        <!-- cancel button -->
+                        <div class="baseImgNavCancel">
+                            <img src="/img/base_btn_navcancel_off.png" border="0" onMouseOver="ImgHover(this, &#039;pointer&#039;, &#039;base_btn_navcancel&#039;, &#039;transparent&#039;)" onMouseOut="ImgHover(this, &#039;default&#039;, &#039;base_btn_navcancel&#039;, &#039;transparent&#039;)" onlick="window.location=&#039;/clips/index&#039;" class="cancel-btn" alt="" />                        </div>
+                        <!-- baseImgNavCancel -->
+                        <!-- spacer -->
+                        <div class="basePaddingNav_3"></div>
+                        <!-- next button -->
+                        <div class="baseImgNavNext">
+                            <img src="/img/base_btn_navnext_off.png" border="0" onMouseOver="ImgHover(this, &#039;pointer&#039;, &#039;base_btn_navnext&#039;, &#039;transparent&#039;)" onMouseOut="ImgHover(this, &#039;default&#039;, &#039;base_btn_navnext&#039;, &#039;transparent&#039;)" class="next-btn" alt="" />                        </div>
+                        
+                        <!-- baseImgNavNext -->
+                    </div>
+                    <!-- basePaddingNav_img -->
+                </div>
+                <!-- baseButtonNav -->
+            </div>
+            <!-- clipadd_navbuttonbar -->
+        </div>
+        <!-- clipadd_navbuttonbarbody -->
+    </div>
+    <!-- clipaddnavbuttonbar -->
+
+</form>  <!-- ClipAddForm -->
+</div>
+
+<!-- linebreak -->
+<div class="linebreakBlock" style="height:20px;"></div>
+<!-- baseContainer -->
+</div>  <!-- baseBody -->
+<div class="baseFooter"></div>
+</div>
+
+
+
+<!-- //kamod -->
+
+<div class="step-2 step-container" >
+<div class="baseHeader">
+    <div style="width:100%; height:65px; position:relative; float:left">
+        <div style="width:100%; height:23px; position:relative; float:left"></div>
+        <div style="width:100%; height:28px; position:relative; float:left"></div>
+    </div>
+    <div style="width:100%; height:104px; position:relative; float:left">
+        <div style="width:40px; height:109px; position:relative; float:left"></div>
+        <div class="clipadd_title">
+            <div class="heading" style="width:100%; height:30px; position:relative; float:left">CLIP EDITOR</div>
+            
+        </div>
+    
+        <div class="clipadd_trail">
+            <div id="xlocation_trail" style="width:440px; background-image:url(/img/base_progress_4.png);"><div class="xstep_separator setup">&nbsp</div><div class="xlocation_box setup" style="width:89px;"></div><div class="xstep_separator input-box">&nbsp</div><div class="xlocation_box input-box" style="width:79px;"></div><div class="xstep_separator scheduling">&nbsp</div><div class="xlocation_box scheduling" style="width:130px;"></div><div class="xstep_separator distribution">&nbsp</div><div class="xlocation_box distribution" style="width:75px;"></div><div style="clear:both;"></div></div>        </div>
+    </div>
+</div>
+    <div style="clear:both;"></div>
+    <div class="baseBody">
+        <div class="baseLeftOffset"></div>
+        <div class="baseContainer">
+            <p class="clip-name">CLIP NAME : </p>
+    
+            <div class="sched_padding_y">
+                 <div class="linebreakBlock" style="height:20px;">
+                    <div class="linebreak"></div> 
+                </div> 
+            </div> 
+            <div id ="image_container">
+                <div class="row"></div>
+            </div>
+            <div id="video_file_not_selected_error" class="custom_error">
+                Select video file (mp4) less than 85479915521 filesize
+            </div>
+            <div id="video_container"></div>
+            <div id="file_upload_container"></div>
+            <div id="more_video_files_to_select" class="validation_error">
+
+        </div>
+
+    </div>
+    <div class="linebreakBlock" style="height:20px;"></div>
+
+    <div class="clipadd_navbuttonbar">
+        <!-- navigation buttons -->
+        <div class="clipadd_navbuttonbarbody">
+            <div class="clipadd_navbuttonbar">
+                <div class="baseButtonNav">
+                    <div class="basePaddingNav_x"></div>
+                    <div class="basePaddingNav_y"></div>
+                    <div class="basePaddingNav_img">
+                        <!-- back button -->
+                    
+                        <!-- baseImgNavBack -->
+                        <!-- spacer -->
+                        <div class="basePaddingNav_3"></div>
+                        <!--  back button -->
+                       <div class="baseImgNavBack">
+                        <img src="/img/base_btn_navback_off.png" border="0" onMouseOver="ImgHover(this, &#039;pointer&#039;, &#039;base_btn_navback&#039;, &#039;transparent&#039;)" onMouseOut="ImgHover(this, &#039;default&#039;, &#039;base_btn_navback&#039;, &#039;transparent&#039;)" class="back-btn" alt="" />                       </div>
+                    
+                    
+                    <!-- cancel button -->
+                        <div class="baseImgNavCancel">
+                            <img src="/img/base_btn_navcancel_off.png" border="0" onMouseOver="ImgHover(this, &#039;pointer&#039;, &#039;base_btn_navcancel&#039;, &#039;transparent&#039;)" onMouseOut="ImgHover(this, &#039;default&#039;, &#039;base_btn_navcancel&#039;, &#039;transparent&#039;)" onlick="window.location=&#039;/clips/index&#039;" class="cancel-btn" alt="" />                        </div>
+                        <!-- baseImgNavCancel -->
+                        <!-- spacer -->
+                        <div class="basePaddingNav_3"></div>
+                        <!-- next button -->
+                        <div class="baseImgNavNext">
+                            <img src="/img/base_btn_navnext_off.png" border="0" onMouseOver="ImgHover(this, &#039;pointer&#039;, &#039;base_btn_navnext&#039;, &#039;transparent&#039;)" onMouseOut="ImgHover(this, &#039;default&#039;, &#039;base_btn_navnext&#039;, &#039;transparent&#039;)" class="next-btn" alt="" />                        </div>
+                        
+                        <!-- baseImgNavNext -->
+                    </div>
+                    <!-- basePaddingNav_img -->
+                </div>
+                <!-- baseButtonNav -->
+            </div>
+            <!-- clipadd_navbuttonbar -->
+        </div>
+        <!-- clipadd_navbuttonbarbody -->
+    </div>
+</div>
+<div class="baseFooter"></div>
+</div>
+
+
+
+
+
+
+
+<div class="step-3" style="display: none;" data-access="1">
+<div class="baseHeader"><div style="width:100%; height:65px; position:relative; float:left"><div style="width:100%; height:23px; position:relative; float:left"></div><div style="width:100%; height:28px; position:relative; float:left"></div></div><div style="width:100%; height:104px; position:relative; float:left"><div style="width:40px; height:109px; position:relative; float:left"></div><div class="sched_title"><div class="heading" style="width:100%; height:30px; position:relative; float:left">SCHEDULINGszzzz</div><div class="formdesc" style="width:100%; position:relative; float:left">Set the dates, times & frequency+ that you want your clip to play out.</div></div><div class="sched_trail"><div id="xlocation_trail" style="width:440px; background-image:url(/img/base_progress_4.png);"><div class="xstep_separator setup">&nbsp</div><div class="xlocation_box setup" style="width:89px;"></div><div class="xstep_separator input-box">&nbsp</div><div class="xlocation_box input-box" style="width:79px;"></div><div class="xstep_separator scheduling">&nbsp</div><div class="xlocation_box scheduling" style="width:130px;"></div><div class="xstep_separator distribution">&nbsp</div><div class="xlocation_box distribution" style="width:75px;"></div><div style="clear:both;"></div></div></div></div></div><div style="clear:both;"></div><div class="baseBody"><div class="baseLeftOffset"></div><div class="baseContainer"><p class="clip-name">CLIP NAME : </p><div class="sched_padding_y"><div class="linebreakBlock" style="height:20px;"><div class="linebreak"></div></div></div><div class="schedDates"><table border=1; style="width:40%"><tr><td style="background-image: url("http:localhost:8002/img/24229_Generic_BG_NO_IMAGE.jpg");background-size: cover;" ><div style="width:150px !important; height:150px !important"></div></td><td><div style="width:150px !important; height:150px !important"> scr 2</div></td><td style="background-image: url("http://localhost:8002/img/24229_Generic_BG_NO_IMAGE.jpg"); background-size: cover;"><div style="width:150px !important; height:150px !important"></div></td><td><div style="width:150px !important; height:150px !important">scr 4</div></td></tr></table><div id="ScheduleGeneralFormInfo"><form action="/clips/edit" id="ScheduleGeneralForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div><input type="hidden" name="_method" value="POST"><div class="schedDateItem"><div class="input text"><label for="ClipStartDate">START DATE</label><input name="data[Clip][start_date]" class="datepicker" style="width:100px;" value="31/08/2023" maxlength="10" type="text" id="ClipStartDate"/></div></div><div class="schedDateItem" style="padding-left:20px;"><div class="input select">
+    <label for="ClipStartHh">START HH </label>
+    <select name="data[Clip][start_hh]" style="width:60px;" id="ClipStartHh">
+        <option value=00>00</option><option value=01>01</option><option value=02>02</option><option value=03>03</option><option value=04>04</option><option value=05>05</option><option value=06>06</option><option value=07>07</option><option value=08>08</option><option value=09>09</option><option value=10>10</option><option value=11>11</option><option value=12>12</option><option value=13>13</option><option value=14>14</option><option value=15>15</option><option value=16>16</option><option value=17>17</option><option value=18>18</option><option value=19>19</option><option value=20>20</option><option value=21>21</option><option value=22>22</option><option value=23>23</option>    </select>
+</div>
+</div><div class="schedDateItem" style="padding-left:20px;"><div class="input select">
+    <label for="ClipStartMm">START MM</label>
+    <select name="data[Clip][start_mm]" style="width:60px;" id="ClipStartHh">
+        <option value=00>00</option><option value=01>01</option><option value=02>02</option><option value=03>03</option><option value=04>04</option><option value=05>05</option><option value=06>06</option><option value=07>07</option><option value=08>08</option><option value=09>09</option><option value=10>10</option><option value=11>11</option><option value=12>12</option><option value=13>13</option><option value=14>14</option><option value=15>15</option><option value=16>16</option><option value=17>17</option><option value=18>18</option><option value=19>19</option><option value=20>20</option><option value=21>21</option><option value=22>22</option><option value=23>23</option><option value=24>24</option><option value=25>25</option><option value=26>26</option><option value=27>27</option><option value=28>28</option><option value=29>29</option><option value=30>30</option><option value=31>31</option><option value=32>32</option><option value=33>33</option><option value=34>34</option><option value=35>35</option><option value=36>36</option><option value=37>37</option><option value=38>38</option><option value=39>39</option><option value=40>40</option><option value=41>41</option><option value=42>42</option><option value=43>43</option><option value=44>44</option><option value=45>45</option><option value=46>46</option><option value=47>47</option><option value=48>48</option><option value=49>49</option><option value=50>50</option><option value=51>51</option><option value=52>52</option><option value=53>53</option><option value=54>54</option><option value=55>55</option><option value=56>56</option><option value=57>57</option><option value=58>58</option><option value=59>59</option>	
+    </select>
+</div>
+
+</div><div class="schedDateItem" style="padding-left:20px;"><div class="input text"><label for="ClipEndDate">END DATE</label><input name="data[Clip][end_date]" class="datepicker" value="NO END DATE" maxlength="11" style="width:100px;" type="text" id="ClipEndDate"/></div></div><div class="schedDateItem" style="padding-left:20px;"><div class="input select">
+    <label for="ClipStartHh" >END HH </label>
+    <select name="data[Clip][end_hh]" style="width:60px;" id="ClipEndHh">
+        <option value=00>00</option><option value=01>01</option><option value=02>02</option><option value=03>03</option><option value=04>04</option><option value=05>05</option><option value=06>06</option><option value=07>07</option><option value=08>08</option><option value=09>09</option><option value=10>10</option><option value=11>11</option><option value=12>12</option><option value=13>13</option><option value=14>14</option><option value=15>15</option><option value=16>16</option><option value=17>17</option><option value=18>18</option><option value=19>19</option><option value=20>20</option><option value=21>21</option><option value=22>22</option><option value=23>23</option>    </select>
+</div>
+    </div><div class="schedDateItem" style= "padding-left:10px;">    <div class="input select">
+    <label for="ClipStartHh">End MM</label>
+    <select name="data[Clip][end_mm]" style="width:60px;" id="ClipEndMm">
+        <option value=00 >00</option><option value=01 >01</option><option value=02 >02</option><option value=03 >03</option><option value=04 >04</option><option value=05 >05</option><option value=06 >06</option><option value=07 >07</option><option value=08 >08</option><option value=09 >09</option><option value=10 >10</option><option value=11 >11</option><option value=12 >12</option><option value=13 >13</option><option value=14 >14</option><option value=15 >15</option><option value=16 >16</option><option value=17 >17</option><option value=18 >18</option><option value=19 >19</option><option value=20 >20</option><option value=21 >21</option><option value=22 >22</option><option value=23 >23</option><option value=24 >24</option><option value=25 >25</option><option value=26 >26</option><option value=27 >27</option><option value=28 >28</option><option value=29 >29</option><option value=30 >30</option><option value=31 >31</option><option value=32 >32</option><option value=33 >33</option><option value=34 >34</option><option value=35 >35</option><option value=36 >36</option><option value=37 >37</option><option value=38 >38</option><option value=39 >39</option><option value=40 >40</option><option value=41 >41</option><option value=42 >42</option><option value=43 >43</option><option value=44 >44</option><option value=45 >45</option><option value=46 >46</option><option value=47 >47</option><option value=48 >48</option><option value=49 >49</option><option value=50 >50</option><option value=51 >51</option><option value=52 >52</option><option value=53 >53</option><option value=54 >54</option><option value=55 >55</option><option value=56 >56</option><option value=57 >57</option><option value=58 >58</option><option value=59 >59</option>	
+    </select>
+    </div>
+    </div><div class="schedDateItem" style="padding-left:20px;"><div class="input select"><label for="ClipRatio">FREQUENCY</label><select name="data[Clip][ratio]" style="width:90px;" id="ClipRatio">
+<option value="1">low</option>
+<option value="3" selected="selected">medium</option>
+<option value="5">high</option>
+</select></div></div></div><div style="display:none;"><div class="input checkbox"><input type="hidden" name="data[Clip][play_all_day]" id="ClipPlayAllDay_" value="0"/><input type="checkbox" name="data[Clip][play_all_day]"  checked="checked" value="1" id="ClipPlayAllDay"/><label for="ClipPlayAllDay">Play All Day</label></div></div><div style="display:none;"><div class="input select"><label for="ClipWeekdays"></label><input type="hidden" name="data[Clip][weekdays]" value="" id="ClipWeekdays"/>
+
+<div class="checkbox"><input type="checkbox" name="data[Clip][weekdays][]" checked="checked" value="1" id="ClipWeekdays1" /><label for="ClipWeekdays1" class="selected">monday</label></div>
+<div class="checkbox"><input type="checkbox" name="data[Clip][weekdays][]" checked="checked" value="2" id="ClipWeekdays2" /><label for="ClipWeekdays2" class="selected">tuesday</label></div>
+<div class="checkbox"><input type="checkbox" name="data[Clip][weekdays][]" checked="checked" value="3" id="ClipWeekdays3" /><label for="ClipWeekdays3" class="selected">wednesday</label></div>
+<div class="checkbox"><input type="checkbox" name="data[Clip][weekdays][]" checked="checked" value="4" id="ClipWeekdays4" /><label for="ClipWeekdays4" class="selected">thursday</label></div>
+<div class="checkbox"><input type="checkbox" name="data[Clip][weekdays][]" checked="checked" value="5" id="ClipWeekdays5" /><label for="ClipWeekdays5" class="selected">friday</label></div>
+<div class="checkbox"><input type="checkbox" name="data[Clip][weekdays][]" checked="checked" value="6" id="ClipWeekdays6" /><label for="ClipWeekdays6" class="selected">saturday</label></div>
+<div class="checkbox"><input type="checkbox" name="data[Clip][weekdays][]" checked="checked" value="7" id="ClipWeekdays7" /><label for="ClipWeekdays7" class="selected">sunday</label></div>
+</div></div></form></div><div class="schedLineSpacer"></div><div class="schedAdvCheckBox" style="display: none;">ADVANCED MODE<input id="cbAdvSchedule" type="checkbox" checked="true" /></div><div class="sched_padding_y"><div class="linebreakBlock" style="height:20px;"><div class="linebreak"></div></div></div><p id="scheduleTitle" style="">Weekly Schedule</p><div id="divAdvSchedule" style=""><div style="margin-top: 10px; position:relative; float:left; ">
+
+
+</div><div class="schedFooterSpacer"></div></div><div class="schedNavButtonBar"><div class="sched_navbuttonbarbody"><div class="sched_navbuttonbar"><div class="baseButtonNav"><div class="basePaddingNav_x"></div><div class="basePaddingNav_y"></div><div class="basePaddingNav_img"><div class="baseImgNavBack"><img src="/img/base_btn_navback_off.png" border="0" onMouseOver="ImgHover(this, &#039;pointer&#039;, &#039;base_btn_navback&#039;, &#039;transparent&#039;)" onMouseOut="ImgHover(this, &#039;default&#039;, &#039;base_btn_navback&#039;, &#039;transparent&#039;)" class="back-btn" alt="" /></div><div class="basePaddingNav_3"></div><div class="baseImgNavCancel"><img src="/img/base_btn_navcancel_off.png" border="0" onMouseOver="ImgHover(this, &#039;pointer&#039;, &#039;base_btn_navcancel&#039;, &#039;transparent&#039;)" onMouseOut="ImgHover(this, &#039;default&#039;, &#039;base_btn_navcancel&#039;, &#039;transparent&#039;)" class="cancel-btn" alt="" /></div><div class="basePaddingNav_3"></div><div class="baseImgNavNext"><img src="/img/base_btn_navnext_off.png" border="0" onMouseOver="ImgHover(this, &#039;pointer&#039;, &#039;base_btn_navnext&#039;, &#039;transparent&#039;)" onMouseOut="ImgHover(this, &#039;default&#039;, &#039;base_btn_navnext&#039;, &#039;transparent&#039;)" class="next-btn" alt="" /></div></div></div></div></div></div></div></div><div class="baseFooter"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+</div>
+
+<div id="file-upload-progress-text">
+    <span>UPLOAD IN PROGRESS.....</span>
+</div>
+<div class="right-bottom processes-holder">
+    <div id="processes">
+        <div class="head"><span class="down-arrow"></span></div>
+        <div class="body" style="display: none;"></div>
+    </div>
+</div>
+<div style="display: none" id="each_image_container">
+    <div class="each_image">
+        <img src="http://localhost:8002/img/no_image.jpg" id="image_tag_id_placeholder" alt="" />    </div>
+</div>
+<div style="display: none" id="each_video_container">
+    <div class="each_video">
+        <video id="video_tag_id_placeholder" src="" controls></video>
+    </div>
+</div>
+<div style="display: none" id="each_file_upload_container">
+    <div class="each_file">
+        <input name="data[Clip][video_name_placeholder]" label="video_label_placeholder" type="file" accept="video/mp4" id="video_id_placeholder" class="video_input_field pageRequired" required="required"/>        <input name="data[Clip][image_name_placeholder]" type="hidden" class="thumbnail_input" id="image_id_placeholder"/>        Max upload size: 85479915521<br />
+        <div class="custom_error"></div>
+    </div>
+</div>
+<input type="hidden" id="no_image_src" value="/img/no_image.jpg"/>
+<script>
+   let screenCountPerScreen = {"1":"1","2":"2","3":"3","4":"4","5":"2","6":"3","7":"4"};
+    let maxFileSizeInMB = '85479915521';
+    let maxFileSizeInBytes = 89632187897348096;
+    let supportedVideoTypes = ['video/mp4'];
+</script>
+        <br class="spacer"/>
+    </div>
+</div>
+
+
+<div id="please_wait" style="display:none;">&nbsp;</div>
+<div id="simple_popup_div"></div>
+<div id="simple_preview_popup_div"></div>
+<div id="simple_alert_popup_div"></div>
+<div id="simple_intro_popup_div"></div>
+
+
+</body>
+</html>
+
